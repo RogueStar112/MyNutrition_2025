@@ -18,7 +18,7 @@ return new class extends Migration
             $table->unsignedBigInteger('source_id');
             $table->timestamps();
             $table->softDeletes();
-            $table->string('img_url', 256)->nullable();
+            $table->string('icon_code', 64)->nullable();
             $table->string('description', 256)->nullable();
 
         });

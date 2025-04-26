@@ -25,7 +25,7 @@ return new class extends Migration
             ['name' => 'kilogram', 'short_name' => 'kg', 'base_value' => 1000, 'unit_type_id' => 1],
             ['name' => 'miligram', 'short_name' => 'mg', 'base_value' => 0.001, 'unit_type_id' => 1],
             ['name' => 'piece', 'short_name' => 'pc', 'base_value' => 1, 'unit_type_id' => 2],
-            ['name' => 'portion', 'short_name' => 'portion', 'base_value' => 1, 'unit_type_id' => 2],
+            ['name' => 'portion', 'short_name' => 'x', 'base_value' => 1, 'unit_type_id' => 2],
             ['name' => 'slice', 'short_name' => 'slice', 'base_value' => 1, 'unit_type_id' => 2],
             ['name' => 'tablespoon', 'short_name' => 'tbsp', 'base_value' => 15, 'unit_type_id' => 3],
             ['name' => 'teaspoon', 'short_name' => 'tsp', 'base_value' => 5, 'unit_type_id' => 3],
