@@ -21,7 +21,6 @@ return new class extends Migration
             $table->float('carbohydrates', 8, 1)->nullable();
             $table->float('protein', 8, 1)->nullable();
 
-
         });
     }
 

@@ -12,32 +12,32 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('food', function(Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('source_id')->references('id')->on('food_source');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('source_id')->references('id')->on('food_source')->cascadeOnDelete();
 
         
         });
 
         Schema::table('meal', function(Blueprint $table) {
 
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
             
         });
 
         Schema::table('meal_items', function(Blueprint $table) {
 
-            $table->foreign('meal_id')->references('id')->on('meal');
-            $table->foreign('food_id')->references('id')->on('food');
-            $table->foreign('food_unit_id')->references('id')->on('food_unit');
+            $table->foreign('meal_id')->references('id')->on('meal')->cascadeOnDelete();
+            $table->foreign('food_id')->references('id')->on('food')->cascadeOnDelete();
+            $table->foreign('food_unit_id')->references('id')->on('food_unit')->cascadeOnDelete();
 
 
         });
 
         Schema::table('macronutrients', function(Blueprint $table) {
             
-            $table->foreign('food_id')->references('id')->on('food');
+            $table->foreign('food_id')->references('id')->on('food')->cascadeOnDelete();
             // $table->foreign('serving_unit_id')->references('id')->on('serving_unit');
-            $table->foreign('food_unit_id')->references('id')->on('food_unit');
+            $table->foreign('food_unit_id')->references('id')->on('food_unit')->cascadeOnDelete();
 
 
         });
@@ -53,17 +53,17 @@ return new class extends Migration
 
         Schema::table('user_health_details', function(Blueprint $table) {
             
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
 
         Schema::table('user_health_logs', function(Blueprint $table) {
             
-            $table->foreign('user_id')->references('id')->on('users');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
         });
 
         Schema::table('water', function(Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users');
-            $table->foreign('fluid_id')->references('id')->on('fluid_type');
+            $table->foreign('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreign('fluid_id')->references('id')->on('fluid_type')->cascadeOnDelete();
         
         
         });

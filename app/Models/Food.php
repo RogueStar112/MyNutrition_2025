@@ -17,7 +17,10 @@ class Food extends Model
 
     protected $table = 'food';
 
-    protected $guarded = ['id']; 
+    // protected $guarded = ['id']; 
+
+    protected $fillable = ['name', 'user_id', 'source_id', 'created_at', 'updated_at', 'deleted_at', 'icon_code', 'description'];
+
 
     public $timestamps = true;
 
