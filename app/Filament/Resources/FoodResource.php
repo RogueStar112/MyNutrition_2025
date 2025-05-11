@@ -129,6 +129,21 @@ class FoodResource extends Resource
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('created_at'),
+
+                Tables\Columns\TextColumn::make('macronutrients.calories')
+                ->label('Calories'),
+
+                             
+                Tables\Columns\TextColumn::make('macronutrients.carbohydrates')
+                ->label('Carbs (g)'),
+
+                
+                Tables\Columns\TextColumn::make('macronutrients.fat')
+                ->label('Fat (g)'),
+
+                
+                Tables\Columns\TextColumn::make('macronutrients.protein')
+                ->label('Protein (g)'),
                 // Tables\Columns\TextColumn::make('updated_at'),
                 Tables\Columns\TextColumn::make('description')
                     ->searchable(),

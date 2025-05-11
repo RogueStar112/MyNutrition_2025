@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use App\Models\Meal;
 use App\Models\User;
+use App\Models\Macronutrients;
 
 class Food extends Model
 {
@@ -35,7 +36,10 @@ class Food extends Model
         return $this->hasMany(Meal::class);
     }
 
-    
+    public function macronutrients(): hasMany
+    {
+        return $this->hasMany(Macronutrients::class);
+    }
 
     
 }
