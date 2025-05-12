@@ -11,6 +11,9 @@ class MealItems extends Model
 
     protected $table = 'meal_items';
 
+    protected $fillable = ['name', 'meal_id', 'food_id', 'food_unit_id', 'serving_size', 'quantity', 'created_at', 'updated_at'];
+
+
     public $timestamps = true;
 
 }

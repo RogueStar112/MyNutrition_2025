@@ -9,6 +9,10 @@ use App\Models\Food;
 use App\Models\User;
 use App\Models\MealItems;
 
+
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 class Meal extends Model
 {
     use HasFactory;

@@ -126,6 +126,9 @@ class FoodResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('id')
+                    ->sortable(['name', 'id']),
+
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('created_at'),
@@ -158,7 +161,8 @@ class FoodResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])
+            ->defaultSort('id');
     }
 
     protected function afterSave(): void

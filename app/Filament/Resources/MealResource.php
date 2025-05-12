@@ -8,6 +8,7 @@ use App\Filament\Resources\MealResource\RelationManagers;
 
 use App\Models\Food;
 use App\Models\Meal;
+use App\Models\FoodSource;
 use App\Models\FoodUnit;
 use App\Models\Macronutrients;
 
@@ -27,6 +28,10 @@ use Filament\Forms\Get;
 
 use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Repeater;
+
+
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class MealResource extends Resource
 {
@@ -49,9 +54,11 @@ class MealResource extends Resource
                         ->helperText(str('The name of your meal.')->inlineMarkdown()->toHtmlString())
                         ->maxLength(64),
 
-                        DateTimePicker::make('meal_time')
+                        DateTimePicker::make('time_planned')
+                        ->label('Meal Time')
                         ->helperText(str("When you're going to have your meal. If in future time, it's considered a planned meal.")->inlineMarkdown()->toHtmlString())
                         ->columnSpan(1)
+                        ->seconds(false)
                         ->required(),
                     ]),
 
@@ -59,30 +66,110 @@ class MealResource extends Resource
                     ->schema([
                         Repeater::make('food')
                            ->schema([
-                                        Forms\Components\Select::make('food_name')
+                                        Forms\Components\Select::make('name')
                                             ->label('Food name')
-                                            ->options(Food::all()->pluck('name', 'id'))
+                                            ->options(Food::all()->pluck('name', 'id')->reverse())
                                             ->searchable()
                                             // ->multiple()
                                             ->reactive()
                                             ->afterStateUpdated(function ($state, callable $set) {
-                                                $servingUnit = FoodUnit::find(Macronutrients::find($state)?->food_unit_id)?->name ?? '';
-                                                $set('serving_unit_label', $servingUnit);
+                                                if ($state != NULL) {
+                                                    $servingUnit = FoodUnit::find(
+                                                        Macronutrients::where('food_id', Food::find($state)->id)->first()?->food_unit_id)
+                                                        ?->name ?? '';
+                                                    $foodSource = FoodSource::find(Food::find($state)->source_id)->name;
+                                                    $foodId = $state;
+                                                    $set('source_name', $foodSource);
+                                                    $set('calories', 0);
+                                                    $set('fat', 0);
+                                                    $set('carbs', 0);
+                                                    $set('protein', 0);
+                                                    $set('food_id', $foodId);
+                                                    $set('serving_unit_label', $servingUnit);
+                                                }
                                             })
+                                            ->helperText(fn (Get $get) => ('From ' . $get('source_name') ?? ''))
                                             ->required(),
 
                                             Forms\Components\TextInput::make('serving_size')
                                                 ->label(fn (Get $get) => 'Serving size: ' . ($get('serving_unit_label') ?? ''))
+                                                ->suffix(fn (Get $get) => ($get('serving_unit_label') . "s" ?? ''))
+                                                 ->reactive()
+                                                  ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                                $calories =
+                                                     round(Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->calories * ($state / Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->serving_size), 1)  ?? '';
+                                                $fat =
+                                                     round(Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->fat * ($state / Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->serving_size), 1)  ?? '';
+                                                $carbs =
+                                                     round(Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->carbohydrates * ($state / Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->serving_size), 1)  ?? '';
+                                                $protein =
+                                                    round(Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->protein * ($state / Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
+                                                    ?->serving_size), 1)  ?? '';
+
+                                                $set('calories', $calories);
+                                                $set('fat', $fat);
+                                                $set('carbs', $carbs);
+                                                $set('protein', $protein);
+                                                })
+                                                // ->helperText(fn (Get $get) => ('This has ' . $get('calories') . " calories." ?? ''))
+                                                ->disabled(fn (callable $get) => blank($get('food_id')))
                                                 ->required(),
 
-                                            Forms\Components\TextInput::make('quantity')
-                                            ->required(),
+
+                                             Fieldset::make('Nutrition info: (Display only)')
+                                            ->schema([
+                                                Forms\Components\TextInput::make('calories')
+                                                ->disabled(),
+                                                
+                                                Forms\Components\TextInput::make('fat')
+                                                ->disabled(),
+                                                
+                                                Forms\Components\TextInput::make('carbs')
+                                                ->disabled(),
+                                                
+                                                Forms\Components\TextInput::make('protein')    
+                                                ->disabled(),
+                                            ])
+                                            ->columns(4)
+
+                                            // Forms\Components\TextInput::make('quantity')
+                                            // ->required(),
                                 ])
+                                    ->reactive()
                                     ->columnSpan(2)
                     ->columns(3)
 
-                        ])
+                                        ]),
+                         Forms\Components\Select::make('user_id')
+                ->relationship('user', 'name')
+                ->searchable()
+                ->preload()
+                ->createOptionForm([
+                    Forms\Components\TextInput::make('name')
+                        ->required()
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('password')
+                        ->required()
+                        ->password()
+                        ->maxLength(255),
+                    Forms\Components\TextInput::make('email')
+                        ->label('Email address')
+                        ->email()
+                        ->required()
+                        ->maxLength(255)
+                ])
+                ->required(),
+
                     ])
+
+                    
             ->columns(3);
 
     }
@@ -91,7 +178,11 @@ class MealResource extends Resource
     {
         return $table
             ->columns([
-                //
+                Tables\Columns\TextColumn::make('name'),
+
+                Tables\Columns\TextColumn::make('time_planned'),
+
+                Tables\Columns\TextColumn::make('created_at')
             ])
             ->filters([
                 //
