@@ -16,6 +16,8 @@ use App\Models\MealItems;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Auth;
+
 class EditMeal extends EditRecord
 {
     protected static string $resource = MealResource::class;
@@ -52,10 +54,10 @@ class EditMeal extends EditRecord
 
 
                 $data['food'][$key]['serving_unit_label'] = FoodUnit::find($value['food_unit_id'])->name;
-                $data['food'][$key]['calories'] = $macros['calories'];
-                $data['food'][$key]['fat'] = $macros['fat'];
-                $data['food'][$key]['carbs'] = $macros['carbohydrates'];
-                $data['food'][$key]['protein'] = $macros['protein'];
+                $data['food'][$key]['calories'] = round(($value['serving_size'] / $macros['serving_size']) * $macros['calories'], 0);
+                $data['food'][$key]['fat'] = round(($value['serving_size'] / $macros['serving_size']) * $macros['fat'], 0);;
+                $data['food'][$key]['carbs'] = round(($value['serving_size'] / $macros['serving_size']) * $macros['carbohydrates'], 0);;
+                $data['food'][$key]['protein'] = round(($value['serving_size'] / $macros['serving_size']) * $macros['protein'], 0);;
 
             }
 
@@ -89,13 +91,70 @@ class EditMeal extends EditRecord
 
         }
 
-                 protected function handleRecordUpdate(Model $record, array $data): Model
+    protected function handleRecordUpdate(Model $record, array $data): Model
 
 
             {   
 
-                       $mealItems = MealItems::where('meal_id', $data['id'])
-                                        ->get(); 
+                    //    dd($record, $data);
+
+                       $mealSelected = Meal::find($record['id']);
+                       
+                       $mealSelected->name = $data['name'];
+                       $mealSelected->time_planned = $data['time_planned'];
+
+                       $mealSelected->update();
+                       $mealSelected->touch();
+
+
+                       $mealItems_selected_delete = MealItems::where('meal_id', $data['food'][0]['meal_id'])
+                                                ->delete();
+
+                    //    $mealItems_selected->delete();
+
+
+                        // $mealItems_selected->update();
+
+                    //    dd($mealItems_selected);
+
+                    //    $record->update($data);
+
+                    $user_id = Auth::user()->id;
+                
+                    $newMeal_search = Meal::where('user_id', $user_id)
+                                ->latest('id')
+                                ->first();
+
+
+                    foreach($data['food'] as $food) {
+                        
+
+
+                        
+                        $meal_macros = Macronutrients::where('food_id', $food['food_id'])
+                                                    ->first();
+                                                    
+
+                        $food_name = Food::find($food['food_id'])->name;
+
+                        MealItems::create([
+                            'name' => $food_name,
+                            'meal_id' => $newMeal_search->id,
+                            'food_id' => $food['food_id'],
+                            'food_unit_id' => $meal_macros['food_unit_id'],
+                            'serving_size' => $food['serving_size'],
+                            'quantity' => 1,
+                            'calories' => round(($meal_macros['serving_size'] / $food['serving_size']) * $meal_macros['calories'], 0),
+                            'fat' =>  round(($meal_macros['serving_size'] / $food['serving_size']) * $meal_macros['fat'], 0),
+                            'carbohydrates' =>  round(($meal_macros['serving_size'] / $food['serving_size']) * $meal_macros['carbohydrates'], 0),
+                            'protein' =>  round(($meal_macros['serving_size'] / $food['serving_size']) * $meal_macros['protein'], 0),
+                        ]);
+                    }
+                        
+                       return $record;
+
+
+
             }
 
 

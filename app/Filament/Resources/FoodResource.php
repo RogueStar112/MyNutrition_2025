@@ -125,11 +125,15 @@ class FoodResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->defaultSort('id', 'desc')
             ->columns([
                 Tables\Columns\TextColumn::make('id')
                     ->sortable(['name', 'id']),
 
                 Tables\Columns\TextColumn::make('name')
+                    ->searchable(),
+
+                Tables\Columns\TextColumn::make('source.name')
                     ->searchable(),
                 // Tables\Columns\TextColumn::make('created_at'),
 
@@ -148,6 +152,11 @@ class FoodResource extends Resource
                 Tables\Columns\TextColumn::make('macronutrients.protein')
                 ->label('Protein (g)'),
                 // Tables\Columns\TextColumn::make('updated_at'),
+
+                Tables\Columns\TextColumn::make('user.name')
+                    
+                    ->searchable(),
+
                 Tables\Columns\TextColumn::make('description')
                     ->searchable(),
             ])
@@ -161,8 +170,7 @@ class FoodResource extends Resource
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ])
-            ->defaultSort('id');
+            ]);
     }
 
     protected function afterSave(): void

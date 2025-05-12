@@ -180,9 +180,11 @@ class MealResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('name'),
 
-                Tables\Columns\TextColumn::make('time_planned'),
+                Tables\Columns\TextColumn::make('time_planned')
+                ->dateTime(),
 
                 Tables\Columns\TextColumn::make('created_at')
+                ->dateTime()
             ])
             ->filters([
                 //

@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-use App\Models\Food;
 
 class FoodSource extends Model
 {
@@ -14,9 +13,11 @@ class FoodSource extends Model
 
     public $timestamps = false;
 
-    public function foods(): hasMany
+    public function foods(): BelongsTo
 
     {
-        return $this->hasMany(Food::class);
+        return $this->belongsTo(Food::class);
     }
+
+
 }
