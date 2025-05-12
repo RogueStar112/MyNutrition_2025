@@ -206,6 +206,14 @@ class MealResource extends Resource
         ];
     }
 
+    
+    public static function getWidgets(): array {
+        return [
+            MealResource\Widgets\DailyCaloriesChart::class,
+            MealResource\Widgets\StatsOverview::class,
+        ];
+    }
+    
     public static function getPages(): array
     {
         return [

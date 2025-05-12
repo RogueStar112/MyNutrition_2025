@@ -5,6 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+use App\Models\Meal;
+use App\Models\Macronutrients;
+
 class MealItems extends Model
 {
     use HasFactory;
@@ -16,4 +19,14 @@ class MealItems extends Model
 
     public $timestamps = true;
 
+
+    public function meal()
+    {
+        return $this->belongsTo(Meal::class);
+    }
+
+    public function macronutrient()
+    {
+        return $this->belongsTo(Macronutrient::class);
+    }
 }

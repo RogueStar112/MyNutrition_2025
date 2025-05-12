@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Food;
 use App\Models\User;
 use App\Models\MealItems;
-
+use App\Models\Macronutrients;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -32,6 +32,12 @@ class Meal extends Model
     {
         return $this->hasMany(Food::class);
     }
+
+    public function macronutrients(): hasMany 
+    {
+        return $this->hasMany(Macronutrients::class);
+    }
+    
 
     public function mealItems(): hasMany 
     {

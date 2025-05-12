@@ -16,4 +16,13 @@ class ListMeals extends ListRecords
             Actions\CreateAction::make(),
         ];
     }
+
+      protected function getHeaderWidgets(): array {
+             return [
+                MealResource\Widgets\DailyCaloriesChart::class,
+                // MealResource\Widgets\StatsOverview::class,
+             ];
+     }
+
+
 }
