@@ -20,6 +20,8 @@ class CreateMeal extends CreateRecord
 {
     protected static string $resource = MealResource::class;
 
+    protected ?string $subheading = 'Custom Page Subheading';
+
     protected function mutateFormDataBeforeCreate(array $data): array {
 
         // dd($data['food']);

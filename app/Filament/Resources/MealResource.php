@@ -94,7 +94,7 @@ class MealResource extends Resource
                                             Forms\Components\TextInput::make('serving_size')
                                                 ->label(fn (Get $get) => 'Serving size: ' . ($get('serving_unit_label') ?? ''))
                                                 ->suffix(fn (Get $get) => ($get('serving_unit_label') . "s" ?? ''))
-                                                 ->reactive()
+                                                 ->live(debounce: 500)
                                                   ->afterStateUpdated(function ($state, callable $set, Get $get) {
                                                 $calories =
                                                      round(Macronutrients::where('food_id', Food::find($get('food_id') ?? '')->id)->first()
@@ -174,30 +174,31 @@ class MealResource extends Resource
 
     }
 
-    public static function table(Table $table): Table
-    {
-        return $table
-            ->columns([
-                Tables\Columns\TextColumn::make('name'),
+    // public static function table(Table $table): Table
+    // {
+    //     return $table
+    //        ->defaultSort('id', 'desc')
+    //         ->columns([
+    //             Tables\Columns\TextColumn::make('name'),
 
-                Tables\Columns\TextColumn::make('time_planned')
-                ->dateTime(),
+    //             Tables\Columns\TextColumn::make('time_planned')
+    //             ->dateTime(),
 
-                Tables\Columns\TextColumn::make('created_at')
-                ->dateTime()
-            ])
-            ->filters([
-                //
-            ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
-            ]);
-    }
+    //             Tables\Columns\TextColumn::make('created_at')
+    //             ->dateTime()
+    //         ])
+    //         ->filters([
+    //             //
+    //         ])
+    //         ->actions([
+    //             Tables\Actions\EditAction::make(),
+    //         ])
+    //         ->bulkActions([
+    //             Tables\Actions\BulkActionGroup::make([
+    //                 Tables\Actions\DeleteBulkAction::make(),
+    //             ]),
+    //         ]);
+    // }
 
     public static function getRelations(): array
     {
@@ -210,10 +211,11 @@ class MealResource extends Resource
     public static function getWidgets(): array {
         return [
             MealResource\Widgets\DailyCaloriesChart::class,
+            MealResource\Widgets\MacroStats::class,
             MealResource\Widgets\StatsOverview::class,
         ];
     }
-    
+
     public static function getPages(): array
     {
         return [

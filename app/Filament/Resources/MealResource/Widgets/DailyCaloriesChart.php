@@ -19,12 +19,12 @@ use App\Models\FoodUnit;
 
 class DailyCaloriesChart extends ChartWidget
 {
-    protected static ?string $heading = 'Daily Calories';
+    protected static ?string $heading = 'Daily Macros';
 
     protected function getData(): array
     {
         $meals = Meal::with('mealItems')
-            ->whereBetween('created_at', [now()->subDays(30), now()])
+            ->whereBetween('time_planned', [now()->subDays(30), now()])
             ->get();
 
 
@@ -63,9 +63,11 @@ class DailyCaloriesChart extends ChartWidget
 
             }
 
+            // dd($meals);
 
 
 
+        // dd($meals);
 
         }
 
@@ -75,7 +77,7 @@ class DailyCaloriesChart extends ChartWidget
         
         // dd($meals);
 
-        $trendData = $meals->groupBy(fn($meal) => $meal->created_at->format('Y-m-d'))
+        $trendData = $meals->groupBy(fn($meal) => date('Y-m-d', strtotime($meal->time_planned)))
             ->map(function ($mealsOnDate) {
                 $totals = [
                     'calories' => 0,
@@ -103,7 +105,20 @@ class DailyCaloriesChart extends ChartWidget
             });
 
         // Format for Filament chart
+        
+        // dd($trendData);
+
         $labels = $trendData->keys()->toArray();
+        
+
+        // set to dd/mm/yyyy format
+        foreach ($labels as $key => $label) {
+            $label = date('d M', strtotime($label));
+
+            $labels[$key] = $label;
+            
+        }
+        // dd($labels);
 
         return [
             'datasets' => [
@@ -112,20 +127,24 @@ class DailyCaloriesChart extends ChartWidget
                     'data' => $trendData->pluck('calories')->map(fn($val) => round($val))->toArray(),
                     'borderColor' => '#f87171', // Red
                 ],
+
                 [
-                    'label' => 'Protein',
-                    'data' => $trendData->pluck('protein')->map(fn($val) => round($val))->toArray(),
-                    'borderColor' => '#34d399', // Green
+                    'label' => 'Fat',
+                    'data' => $trendData->pluck('fat')->map(fn($val) => round($val))->toArray(),
+                    'borderColor' => '#fbbf24', // Yellow
                 ],
+
+                
                 [
                     'label' => 'Carbs',
                     'data' => $trendData->pluck('carbs')->map(fn($val) => round($val))->toArray(),
                     'borderColor' => '#60a5fa', // Blue
                 ],
+                
                 [
-                    'label' => 'Fat',
-                    'data' => $trendData->pluck('fat')->map(fn($val) => round($val))->toArray(),
-                    'borderColor' => '#fbbf24', // Yellow
+                    'label' => 'Protein',
+                    'data' => $trendData->pluck('protein')->map(fn($val) => round($val))->toArray(),
+                    'borderColor' => '#34d399', // Green
                 ],
             ],
             'labels' => $labels,

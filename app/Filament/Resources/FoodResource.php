@@ -19,101 +19,139 @@ use App\Models\FoodSource;
 use App\Models\Macronutrients;
 use App\Models\Micronutrients;
 
+use Filament\Tables\Actions\Action;
+
+use Illuminate\Http\Request;
+use OpenAI\Laravel\Facades\OpenAI;
+use OpenAI\Responses\Completions\CreateResponse;
+
+use Filament\Forms\Components\Fieldset;
+
 class FoodResource extends Resource
 {
     protected static ?string $model = Food::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected static ?string $description = '✨ inputs are required for AI Auto Fill.';
+
+    protected ?string $subheading = 'This is the subheading.';
+
     public static function form(Form $form): Form
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                ->placeholder('Ricotta Cheese')
-                ->required()
-                ->maxLength(64),
+
+                Fieldset::make('Step 1. Name and Source')
+                ->schema([
+                    Forms\Components\TextInput::make('name')
+                    ->label('Name')
+                    ->helperText('The name of the food you want to add.')
+                    ->placeholder('Ricotta Cheese')
+                    ->required()
+                    ->maxLength(64),
 
 
-                Forms\Components\TextInput::make('food_source')
-                ->placeholder('Aldi')
-                ->required()
-                ->maxLength(64),
+                    Forms\Components\TextInput::make('food_source')
+                    ->label('Food source')
+                    ->helperText('Where the food came from.')
+                    ->placeholder('Aldi')
+                    ->required()
+                    ->maxLength(64),
+                ]),
         
+                Fieldset::make('Step 2. Serving size and units')
+                    ->schema([
+                           Forms\Components\TextInput::make('serving_size')
+                            ->label('Serving size')
+                            ->placeholder('100')
+                            ->required(),
 
-                Forms\Components\TextInput::make('serving_size')
-                ->placeholder('100')
-                ->required(),
+                            // food units are arbitrarily preloaded in the database, and is currently simplified.
 
-                // food units are arbitrarily preloaded in the database, and is currently simplified.
-                Forms\Components\Select::make('food_unit')
-                ->options([
-                    '1' => 'grams (g)',
-                    '5' => 'pieces (pcs)',
-                    '6' => 'portions (x)',
-                    '7' => 'slice (slices)',
-                    '8' => 'tablespoons (tbsp)',
-                    '9' => 'teaspoons (tsp)',
-                    '10' => 'mililitres (ml)',
-                    '12' => 'litres (l)'
-                ])
-                ->required(),
+                            Forms\Components\Select::make('food_unit')
+                            ->label('Food unit')
+                            ->options([
+                                '1' => 'grams (g)',
+                                '5' => 'pieces (pcs)',
+                                '6' => 'portions (x)',
+                                '7' => 'slice (slices)',
+                                '8' => 'tablespoons (tbsp)',
+                                '9' => 'teaspoons (tsp)',
+                                '10' => 'mililitres (ml)',
+                                '12' => 'litres (l)'
+                            ])
+                            ->required(),
+                            ]),
+             
 
                             // Macronutrient fields
-            Forms\Components\TextInput::make('calories')
-                ->label('Calories (kcal)')
-                ->numeric()
-                ->required()
-                ->default(fn ($record) => $record?->macronutrients?->calories) // <-- THIS
-                ->dehydrateStateUsing(fn ($state) => (float) $state), // Save clean
-
-            Forms\Components\TextInput::make('fat')
-                ->label('Fat (g)')
-                ->numeric()
-                ->required()
-                ->default(fn ($record) => $record?->macronutrients?->fat)
-                ->dehydrateStateUsing(fn ($state) => (float) $state), // Save clean
-
-            Forms\Components\TextInput::make('carbohydrates')
-                ->label('Carbohydrates (g)')
-                ->numeric()
-                ->required()
-                ->default(fn ($record) => $record?->macronutrients?->carbohydrates)
-                ->dehydrateStateUsing(fn ($state) => (float) $state), // Save clean
-
-
-            Forms\Components\TextInput::make('protein')
-                ->label('Protein (g)')
-                ->numeric()
-                ->required()
-                ->default(fn ($record) => $record?->macronutrients?->protein)
-                ->dehydrateStateUsing(fn ($state) => (float) $state), // Save clean
-
-        
                 
-            
-                Forms\Components\Select::make('user_id')
-                ->relationship('user', 'name')
-                ->searchable()
-                ->preload()
-                ->createOptionForm([
-                    Forms\Components\TextInput::make('name')
-                        ->required()
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('password')
-                        ->required()
-                        ->password()
-                        ->maxLength(255),
-                    Forms\Components\TextInput::make('email')
-                        ->label('Email address')
-                        ->email()
-                        ->required()
-                        ->maxLength(255)
-                ])
-                ->required(),
+                    
+                Fieldset::make('Step 3. User and Description')
+                 ->schema([
+                    Forms\Components\Select::make('user_id')
+                    ->label('User')
+                    ->relationship('user', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->createOptionForm([
+                        Forms\Components\TextInput::make('name')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('password')
+                            ->required()
+                            ->password()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->label('Email address')
+                            ->email()
+                            ->required()
+                            ->maxLength(255)
+                    ])
+                    ->required(),
 
-                Forms\Components\TextInput::make('description')
-                ->maxLength(256),
+                    Forms\Components\TextInput::make('description')
+                    ->maxLength(256),
+                ]),
+
+              Fieldset::make('Step 4. Nutrition')
+                    // ->description('These do NOT have to be filled in for AI Auto Fill.')
+                    ->schema([
+                        Forms\Components\TextInput::make('calories')
+                            ->label('Calories (kcal)')
+                            ->numeric()
+                            ->required()
+                            ->default(fn ($record) => $record?->macronutrients?->calories) // <-- THIS
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+
+                        Forms\Components\TextInput::make('fat')
+                            ->label('Fat (g)')
+                            ->numeric()
+                            ->required()
+                            ->default(fn ($record) => $record?->macronutrients?->fat)
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+
+
+                        Forms\Components\TextInput::make('carbohydrates')
+                            ->label('Carbohydrates (g)')
+                            ->numeric()
+                            ->required()
+                            ->default(fn ($record) => $record?->macronutrients?->carbohydrates)
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+
+                        Forms\Components\TextInput::make('protein')
+                            ->label('Protein (g)')
+                            ->numeric()
+                            ->required()
+                            ->default(fn ($record) => $record?->macronutrients?->protein)
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+                    ]),
+        
             ]);
     }
 
@@ -140,14 +178,12 @@ class FoodResource extends Resource
                 Tables\Columns\TextColumn::make('macronutrients.calories')
                 ->label('Calories'),
 
-                             
-                Tables\Columns\TextColumn::make('macronutrients.carbohydrates')
-                ->label('Carbs (g)'),
-
                 
                 Tables\Columns\TextColumn::make('macronutrients.fat')
                 ->label('Fat (g)'),
 
+                Tables\Columns\TextColumn::make('macronutrients.carbohydrates')
+                ->label('Carbs (g)'),
                 
                 Tables\Columns\TextColumn::make('macronutrients.protein')
                 ->label('Protein (g)'),
@@ -165,6 +201,8 @@ class FoodResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
+               
+
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
@@ -172,6 +210,7 @@ class FoodResource extends Resource
                 ]),
             ]);
     }
+
 
     protected function afterSave(): void
     {
@@ -218,4 +257,6 @@ class FoodResource extends Resource
             'edit' => Pages\EditFood::route('/{record}/edit'),
         ];
     }
+
+
 }

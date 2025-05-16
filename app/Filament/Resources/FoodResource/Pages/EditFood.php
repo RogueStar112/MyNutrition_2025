@@ -16,14 +16,93 @@ use App\Models\Macronutrients;
 
 use Illuminate\Database\Eloquent\Model;
 
+use Illuminate\Http\Request;
+use OpenAI\Laravel\Facades\OpenAI;
+use OpenAI\Responses\Completions\CreateResponse;
+
+use Filament\Actions\Action;
+
+
+use Filament\Pages\Actions\CreateAction;
+
+use Illuminate\Http\JsonResponse;
+use Filament\Notifications\Notification;
+
 class EditFood extends EditRecord
 {
     protected static string $resource = FoodResource::class;
 
+      protected ?string $subheading = 'Edit a food item. AI Auto Fill requires Step 1, 2, and 4, which fills in macros for Step 3.';
+
+      protected function foodPrompt($name, $serving_size, $source, $serving_unit): JsonResponse {
+
+            $result = OpenAI::chat()->create([
+                'model' => 'gpt-3.5-turbo',
+                'messages' => [
+                    // can use 'system' in role alternatively.
+                    ['role' => 'user', 'content' => "Responding with pure JSON, can you provide the nutritional content for $name (per $serving_size $serving_unit, from $source)? Return the following ONLY: Calories (kcal), Fat (g), Carbs (g), Protein (g). "],
+                ],
+            ]);
+
+            return response()->json(['result' => $result->choices[0]->message->content]);
+        }
+
     protected function getHeaderActions(): array
     {
         return [
-            Actions\DeleteAction::make(),
+            Action::make('aiAutoFill')
+                    ->label('AI Auto Fill')
+                    ->color('success')
+                    ->icon('heroicon-m-sparkles')
+                    ->action(function () {
+                        // Access unsubmitted form data
+                        $formData = $this->form->getState();
+
+                        $name = $formData['name'] ?? null;
+                        $source = $formData['food_source'] ?? null;
+                        $foodUnit = $formData['food_unit'] ?? null;
+                        $servingSize = $formData['serving_size'] ?? null;
+
+                        $foodPrompt = $this->foodPrompt($formData['name'], $formData['serving_size'], $formData['food_unit'], $formData['food_source']);
+
+                        $foodPrompt_JSON = $foodPrompt->getContent();
+                        $foodPrompt_array = json_decode($foodPrompt_JSON, true);
+                    
+                        $foodPrompt_result = json_decode($foodPrompt_array['result'], true);
+
+                        // ✨ Use AI logic or API call here (stubbed for now)
+
+
+
+                        $calculatedCalories = $foodPrompt_result['Calories (kcal)'];
+                        $calculatedFats = $foodPrompt_result['Fat (g)'];
+                        $calculatedCarbs = $foodPrompt_result['Carbs (g)'];
+                        $calculatedProtein = $foodPrompt_result['Protein (g)'];
+
+
+                        // Set form state (e.g., to auto-fill a calories field)
+                        $this->form->fill([
+                            'name' => $formData['name'],
+                            'food_source' => $formData['food_source'],
+                            'serving_size' => $formData['serving_size'],
+                            'food_unit' => $formData['food_unit'],
+
+                            'calories' => $calculatedCalories,
+                            'fat' => $calculatedFats,
+                            'carbohydrates' => $calculatedCarbs,
+                            'protein' => $calculatedProtein,
+                            'user_id' => $formData['user_id'],
+                            'description' => 'AI'
+                        ]);
+
+                        Notification::make()
+                            ->title('Macros estimated and filled in!')
+                            ->success()
+                            ->send();
+                    }),
+
+                        Actions\DeleteAction::make()
+                               ->icon('heroicon-m-trash'),
         ];
     }
 
