@@ -23,6 +23,8 @@ use App\Models\Meal;
 use App\Models\MealItems;
 use App\Models\FoodUnit;
 
+use Illuminate\Support\Facades\DB;
+
 
 class StatsOverview extends BaseWidget
 {   
@@ -129,6 +131,18 @@ class StatsOverview extends BaseWidget
         $avg_calories_mspd = round(array_sum($avg_calories_mspd) / count($avg_calories_mspd), 0);
 
         // dd($avg_calories_mspd);
+
+        $popular_meal_items = DB::table('meal_items')
+            ->join('meal', 'meal_items.meal_id', '=', 'meal.id')
+            ->where('meal.user_id', Auth::id())
+            ->select('meal_items.name', DB::raw('count(*) as total'))
+            ->groupBy('meal_items.name')
+            ->orderByDesc('total')
+            ->limit(3)
+            ->get();
+        // dd($popular_meal_items);
+
+        $popular_meal_items_display = implode(", ", $popular_meal_items->pluck('name')->map(fn($val) => $val)->toArray());
             
         return [
         Stat::make('Average Calories Per Day', "$avg_calories_mspd" . "kcal")
@@ -136,7 +150,7 @@ class StatsOverview extends BaseWidget
             ->descriptionIcon('heroicon-m-arrow-trending-up')
             ->chart($trendData->pluck('calories')->map(fn($val) => round($val))->toArray())
             ->color('success'),
-        Stat::make('Top 3 Popular Meal Items this week', 'White Rice, Frikadellen, Pepsi MAX')
+        Stat::make('Top 3 Popular Meal Items this week', "$popular_meal_items_display")
             ->description('7% decrease')
             ->descriptionIcon('heroicon-m-arrow-trending-down'),
         Stat::make('Average time on page', '3:12')
