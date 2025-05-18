@@ -115,13 +115,12 @@ class FoodResource extends Resource
                     ->maxLength(256),
                 ]),
 
-              Fieldset::make('Step 4. Nutrition')
+              Fieldset::make('Step 4. Nutrition: Macronutrients')
                     // ->description('These do NOT have to be filled in for AI Auto Fill.')
                     ->schema([
                         Forms\Components\TextInput::make('calories')
                             ->label('Calories (kcal)')
                             ->numeric()
-                            ->required()
                             ->default(fn ($record) => $record?->macronutrients?->calories) // <-- THIS
                             ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
                             ->required(false),
@@ -129,7 +128,6 @@ class FoodResource extends Resource
                         Forms\Components\TextInput::make('fat')
                             ->label('Fat (g)')
                             ->numeric()
-                            ->required()
                             ->default(fn ($record) => $record?->macronutrients?->fat)
                             ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
                             ->required(false),
@@ -138,7 +136,6 @@ class FoodResource extends Resource
                         Forms\Components\TextInput::make('carbohydrates')
                             ->label('Carbohydrates (g)')
                             ->numeric()
-                            ->required()
                             ->default(fn ($record) => $record?->macronutrients?->carbohydrates)
                             ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
                             ->required(false),
@@ -146,8 +143,40 @@ class FoodResource extends Resource
                         Forms\Components\TextInput::make('protein')
                             ->label('Protein (g)')
                             ->numeric()
-                            ->required()
                             ->default(fn ($record) => $record?->macronutrients?->protein)
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+                    ]),
+                    
+                Fieldset::make('Step 5. Nutrition: Micronutrients')
+                    // ->description('These do NOT have to be filled in for AI Auto Fill.')
+                    ->schema([
+                        Forms\Components\TextInput::make('sugars')
+                            ->label('Sugars (g)')
+                            ->numeric()
+                            ->default(fn ($record) => $record?->micronutrients?->sugars) // <-- THIS
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+
+                        Forms\Components\TextInput::make('saturates')
+                            ->label('Saturated Fat (g)')
+                            ->numeric()
+                            ->default(fn ($record) => $record?->micronutrients?->saturates)
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+
+
+                        Forms\Components\TextInput::make('fibre')
+                            ->label('Fibre (g)')
+                            ->numeric()
+                            ->default(fn ($record) => $record?->micronutrients?->fibre)
+                            ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
+                            ->required(false),
+
+                        Forms\Components\TextInput::make('salt')
+                            ->label('Salt (g)')
+                            ->numeric()
+                            ->default(fn ($record) => $record?->micronutrients?->salt)
                             ->dehydrateStateUsing(fn ($state) => (float) $state) // Save clean
                             ->required(false),
                     ]),

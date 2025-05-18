@@ -13,6 +13,7 @@ use App\Models\FoodSource;
 use App\Models\Meal;
 use App\Models\User;
 use App\Models\Macronutrients;
+use App\Models\Micronutrients;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -34,13 +35,13 @@ class EditFood extends EditRecord
 
       protected ?string $subheading = 'Edit a food item. AI Auto Fill requires Step 1, 2, and 4, which fills in macros for Step 3.';
 
-      protected function foodPrompt($name, $serving_size, $source, $serving_unit): JsonResponse {
+        protected function foodPrompt($name, $serving_size, $source, $serving_unit): JsonResponse {
 
             $result = OpenAI::chat()->create([
                 'model' => 'gpt-3.5-turbo',
                 'messages' => [
                     // can use 'system' in role alternatively.
-                    ['role' => 'user', 'content' => "Responding with pure JSON, can you provide the nutritional content for $name (per $serving_size $serving_unit, from $source)? Return the following ONLY: Calories (kcal), Fat (g), Carbs (g), Protein (g). "],
+                    ['role' => 'user', 'content' => "Responding with pure JSON, can you provide the nutritional content for $name (per $serving_size $serving_unit), from $source, in addition to its data source? Return the following ONLY: Calories (kcal), Fat (g), Carbs (g), Protein (g), Sugars (g), Saturates (g), Fibre (g), Salt (g), DataSource. "],
                 ],
             ]);
 
@@ -72,13 +73,19 @@ class EditFood extends EditRecord
 
                         // ✨ Use AI logic or API call here (stubbed for now)
 
+                        // dd($foodPrompt_result);
 
+                        $calculatedCalories = $foodPrompt_result['Calories'] ?? $foodPrompt_result['Calories (kcal)'] ?? NULL;
+                        $calculatedFats = $foodPrompt_result['Fat']  ?? $foodPrompt_result['Fat (g)'] ?? NULL;
+                        $calculatedCarbs = $foodPrompt_result['Carbs'] ?? $foodPrompt_result['Carbs (g)'] ?? NULL;
+                        $calculatedProtein = $foodPrompt_result['Protein'] ?? $foodPrompt_result['Protein (g)'] ?? NULL;
 
-                        $calculatedCalories = $foodPrompt_result['Calories (kcal)'];
-                        $calculatedFats = $foodPrompt_result['Fat (g)'];
-                        $calculatedCarbs = $foodPrompt_result['Carbs (g)'];
-                        $calculatedProtein = $foodPrompt_result['Protein (g)'];
+                        $calculatedSugars = $foodPrompt_result['Sugars'] ?? $foodPrompt_result['Sugars (g)'] ?? NULL;
+                        $calculatedSaturates = $foodPrompt_result['Saturates'] ?? $foodPrompt_result['Saturates (g)'] ?? NULL;
+                        $calculatedFibre = $foodPrompt_result['Fibre'] ?? $foodPrompt_result['Fibre (g)'] ?? NULL;
+                        $calculatedSalt = $foodPrompt_result['Salt'] ?? $foodPrompt_result['Salt (g)'] ?? NULL;
 
+                        $sourceData = $foodPrompt_result['DataSource'];
 
                         // Set form state (e.g., to auto-fill a calories field)
                         $this->form->fill([
@@ -91,8 +98,14 @@ class EditFood extends EditRecord
                             'fat' => $calculatedFats,
                             'carbohydrates' => $calculatedCarbs,
                             'protein' => $calculatedProtein,
+
+                            'sugars' => $calculatedSugars,
+                            'saturates' => $calculatedSaturates,
+                            'fibre' => $calculatedFibre,
+                            'salt' => $calculatedSalt,
+
                             'user_id' => $formData['user_id'],
-                            'description' => 'AI'
+                            'description' => "🔎 AI. Source: $sourceData" 
                         ]);
 
                         Notification::make()
@@ -122,16 +135,24 @@ class EditFood extends EditRecord
             $macronutrient_data = Macronutrients::where('food_id', $data['id'])
                                     ->first();
 
+            $micronutrient_data = Micronutrients::where('food_id', $data['id'])
+                                 ->first();
+
             // dd($macronutrient_data->calories);
 
                         
-            $data['food_unit'] = $macronutrient_data->food_unit_id;
-            $data['serving_size'] = $macronutrient_data->serving_size;
-            $data['calories'] = $macronutrient_data->calories;
-            $data['fat'] = $macronutrient_data->fat;
-            $data['carbohydrates'] = $macronutrient_data->carbohydrates;
-            $data['protein'] = $macronutrient_data->protein;
+            $data['food_unit'] = $macronutrient_data->food_unit_id ?? 1;
+            $data['serving_size'] = $macronutrient_data->serving_size ?? 0;
+            
+            $data['calories'] = $macronutrient_data->calories ?? 0;
+            $data['fat'] = $macronutrient_data->fat ?? 0;
+            $data['carbohydrates'] = $macronutrient_data->carbohydrates?? 0;
+            $data['protein'] = $macronutrient_data->protein ?? 0;
 
+            $data['sugars'] = $micronutrient_data->sugars ?? 0;
+            $data['saturates'] = $micronutrient_data->saturates ?? 0;
+            $data['fibre'] = $micronutrient_data->fibre ?? 0 ;
+            $data['salt'] = $micronutrient_data->salt ?? 0;
 
             return $data;
         }
@@ -184,6 +205,16 @@ class EditFood extends EditRecord
             $macronutrient_data->protein = $data['protein'];
 
             $macronutrient_data->save();
+
+            
+
+
+            $micronutrient_data = Micronutrients::updateOrCreate(['food_id' => $record['id']], ['sugars' => $data['sugars'], 'saturates' => $data['saturates'], 'fibre' => $data['fibre'], 'salt' => $data['salt']]);
+                                    
+            // $micronutrient_data->sugars = $data['sugars'] ?? 0;
+            // $micronutrient_data->saturates = $data['saturates'] ?? 0;
+            // $micronutrient_data->fibre = $data['fibre'] ?? 0 ;
+            // $micronutrient_data->salt = $data['salt'] ?? 0;
 
             $record->update($data);
 
