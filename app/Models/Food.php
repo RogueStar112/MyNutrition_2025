@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\Meal;
 use App\Models\User;
 use App\Models\Macronutrients;
+use App\Models\Micronutrients;
 use App\Models\FoodSource;
 
 class Food extends Model
@@ -40,6 +41,11 @@ class Food extends Model
     public function macronutrients(): hasMany
     {
         return $this->hasMany(Macronutrients::class);
+    }
+
+    public function micronutrients(): hasMany
+    {
+        return $this->hasMany(Micronutrients::class);
     }
 
     public function source(): BelongsTo

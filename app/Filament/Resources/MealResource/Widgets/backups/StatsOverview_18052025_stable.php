@@ -25,10 +25,8 @@ use App\Models\FoodUnit;
 
 use Illuminate\Support\Facades\DB;
 
-use Illuminate\Support\HtmlString;
 
-
-class StatsOverview extends BaseWidget
+class StatsOverview_test extends BaseWidget
 {   
     protected ?string $heading = 'Analytics';
 
@@ -114,6 +112,7 @@ class StatsOverview extends BaseWidget
 
                 return $totals;
             });
+
         // Format for Filament chart
 
         $labels = $trendData->keys()->toArray();
@@ -127,9 +126,7 @@ class StatsOverview extends BaseWidget
             
         }
 
-        $avg_calories_mspd = array_slice($trendData->pluck('calories')->map(fn($val) => round($val))->toArray(), -7, 7, true);
-
-        // dd($avg_calories_mspd);
+        $avg_calories_mspd = $trendData->pluck('calories')->map(fn($val) => round($val))->toArray();
 
         $avg_calories_mspd = round(array_sum($avg_calories_mspd) / count($avg_calories_mspd), 0);
 
@@ -149,76 +146,25 @@ class StatsOverview extends BaseWidget
         $last7days = date('d/m/Y', strtotime(now()->subdays(6)));
         $today = date('d/m/Y', strtotime(now()));
 
-        // $popular_meal_items_display = implode(", <br>", $popular_meal_items->pluck('name')->map(fn($val) => $val)->toArray());
+        $popular_meal_items_display = implode(", ", $popular_meal_items->pluck('name')->map(fn($val) => $val)->toArray());
         
-        $popular_meal_items_array_name = [];
-        $popular_meal_items_array_points = [];
 
-        foreach($popular_meal_items as $popular_meal_item) {
-            array_push($popular_meal_items_array_name, $popular_meal_item->name);
-            array_push($popular_meal_items_array_points, $popular_meal_item->total);
-        }
-
-        // dd($popular_meal_items_array);
-
-        // dd($popular_meal_items_display);
-
-        $last2records = [];
-
-        $trendData_last2records = array_slice($trendData->toArray(), -2, 2, true);
-        
-        foreach($trendData_last2records as $key => $record) {
-            array_push($last2records, ['date' => $key, 'macros' => $record]);
-            // $last2records[$key]['date'] = $key;
-        }
-
-        
-        // $second_latest_calories = $last2records[0]['macros']['calories'];
-
-        $latest_macros = $last2records[1]['macros'];
-
-
-
-        $latest_macros_date = $last2records[1]['date'];
-        $latest_calories = $last2records[1]['macros']['calories'];
-        $second_latest_calories = $last2records[0]['macros']['calories'];
-
-        // dd($latest_calories, $second_latest_calories);
-        $calorie_difference_perc = round((($latest_calories - $second_latest_calories) / (($latest_calories + $second_latest_calories) / 2)) * 100, 1);
-
-        
 
         return [
-        Stat::make("Latest Calories - " . date('d M', strtotime($latest_macros_date)), "$latest_calories" . "kcal")
-            ->description("$calorie_difference_perc%" . ($calorie_difference_perc > 0 ? " more " : " less ") . " compared to " . date('d M', strtotime($last2records[0]['date'])) . " (" . $last2records[0]['macros']['calories'] . "kcal)")
-            ->descriptionIcon('heroicon-m-arrow-trending-up')
-            // ->chart($trendData->pluck('calories')->map(fn($val) => round($val))->toArray())
-            ->chart([$second_latest_calories, $latest_calories])
-            ->color(($calorie_difference_perc > 0) ? 'danger' : 'success'),
         Stat::make('Average Calories Per Day', "$avg_calories_mspd" . "kcal")
-            ->description("From $last7days to $today")
+            ->description('On 12/05/2025')
             ->descriptionIcon('heroicon-m-arrow-trending-up')
             ->chart($trendData->pluck('calories')->map(fn($val) => round($val))->toArray())
             ->color('success'),
-        Stat::make('Top 3 Popular Meal Items this week', "")
-            ->description("From $last7days to $today")
-            ->label(new HtmlString("
-            <div class='flex flex-col w-full gap-1' style='width: 21.313rem;'>
-            <h2 style='font-size: 0.875rem;'>Top 3 Items</h2><br>
-            <p style='background: #EDDD53;
-background: linear-gradient(90deg,rgba(237, 221, 83, 1) 5%, rgba(24, 24, 27, 1) 100%); color: black; padding: 0.325rem; width: 100%; border-top-left-radius: 5%; border-bottom-left-radius: 5%;'>1. $popular_meal_items_array_name[0]: $popular_meal_items_array_points[0]x</p>
-            <p style='background: #bfbdac;
-background: linear-gradient(90deg,rgba(191, 189, 172, 1) 5%, rgba(24, 24, 27, 1) 100%); color: black; padding: 0.325rem; width: 80%; border-top-left-radius: 5%; border-bottom-left-radius: 5%;'>2. $popular_meal_items_array_name[1]: $popular_meal_items_array_points[1]x</p>
-            <p style='background: #47450e;
-background: linear-gradient(90deg,rgba(71, 69, 14, 1) 5%, rgba(24, 24, 27, 1) 100%); color: lightgray; padding: 0.325rem; width: 50%; border-top-left-radius: 5%; border-bottom-left-radius: 5%;'>3. $popular_meal_items_array_name[2]: $popular_meal_items_array_points[2]x</p>
-            </div>
-
-            "))
+        Stat::make('Top 3 Popular Meal Items this week', "$popular_meal_items_display")
+            ->description("From $last7days to $today"),
+        Stat::make('Top 3 Recent Meal Items by Macro (Fat/Carbs/Protein)', "")
+            ->description("Fat")
+            ->descriptionIcon('heroicon-m-arrow-trending-up')
             ->extraAttributes([
-                'class' => 'w-full',
-                'style' => 'min-width: 300px;',
-            ])
-            ->color('info'),
+                'class' => 'cursor-pointer',
+                'wire:click' => "\$dispatch('setStatusFilter', { filter: 'processed' })",
+            ]),
         ];
     }
 }

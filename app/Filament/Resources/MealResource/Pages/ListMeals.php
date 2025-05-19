@@ -70,7 +70,7 @@ class ListMeals extends ListRecords
                      Action::make('viewItems')
                     ->label(fn ($record) => 'View (' . $record->mealItems()->count() . ')')
                     ->icon('heroicon-o-eye')
-                    ->modalHeading(fn ($record) => "Meal Items for: {$record->title}")
+                    ->modalHeading(fn ($record) => "Meal Items for: {$record->name}")
                     ->form(fn ($record) => [
                         Placeholder::make('meal_items')
                             ->label('Meal Items')
@@ -86,6 +86,7 @@ class ListMeals extends ListRecords
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ]);
+            
     }
 
       protected function getHeaderWidgets(): array {

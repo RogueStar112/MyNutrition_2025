@@ -19,7 +19,7 @@ use App\Models\FoodUnit;
 
 class DailyCaloriesChart extends ChartWidget
 {
-    protected static ?string $heading = 'Daily Macros';
+    protected static ?string $heading = 'Daily Macros (Last 30 Days)';
 
     protected function getData(): array
     {

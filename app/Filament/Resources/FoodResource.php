@@ -26,6 +26,9 @@ use OpenAI\Laravel\Facades\OpenAI;
 use OpenAI\Responses\Completions\CreateResponse;
 
 use Filament\Forms\Components\Fieldset;
+use Filament\Forms\Components\Placeholder;
+
+use Illuminate\Support\HtmlString;
 
 class FoodResource extends Resource
 {
@@ -230,7 +233,36 @@ class FoodResource extends Resource
             ])
             ->actions([
                 Tables\Actions\EditAction::make(),
-               
+                Action::make('viewNutrients')
+                    ->label('View')
+                    ->icon('heroicon-o-eye')
+                    ->modalHeading(fn ($record) => "Meal Items for: {$record->title}")
+                    ->form(function ($record) {
+                        $query = Macronutrients::where('macronutrients.food_id', $record->id)
+                                    ->select('calories', 'fat', 'carbohydrates', 'protein');
+
+                        // Check if micronutrients exist for this food
+                        if (Micronutrients::where('food_id', $record->id)->exists()) {
+                            $query->join('micronutrients', 'macronutrients.food_id', '=', 'micronutrients.food_id')
+                                ->select('calories', 'fat', 'carbohydrates', 'protein')
+                                ->addSelect('sugars', 'saturates', 'fibre', 'salt');
+                        }
+
+                        $nutrients = $query->first();
+
+                        return [
+                            Placeholder::make('meal_items')
+                                ->label("Macros and Micros of {$record->id}")
+                                ->content(new HtmlString('' . 
+                                    $nutrients
+                                        ? '<ul>' . collect($nutrients->toArray())
+                                            ->map(fn($value, $key) => "<li><strong>" . ucfirst($key) . "</strong>: {$value}</li>")
+                                            ->implode('') . '</ul>'
+                                        : 'No nutrition data found.'
+                                ))
+                              
+                        ];
+                    }),
 
             ])
             ->bulkActions([

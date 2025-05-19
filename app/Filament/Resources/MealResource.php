@@ -211,7 +211,7 @@ class MealResource extends Resource
     public static function getWidgets(): array {
         return [
             MealResource\Widgets\DailyCaloriesChart::class,
-            MealResource\Widgets\MacroStats::class,
+            // MealResource\Widgets\MacroStats::class,
             MealResource\Widgets\StatsOverview::class,
         ];
     }
