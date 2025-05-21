@@ -39,6 +39,8 @@ class MealResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
+    protected ?string $subheading = 'Custom Page Subheading';
+
     public static function form(Form $form): Form
     {
         return $form

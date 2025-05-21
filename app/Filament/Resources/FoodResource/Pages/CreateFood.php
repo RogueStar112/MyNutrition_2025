@@ -32,7 +32,7 @@ class CreateFood extends CreateRecord
     
     protected static string $resource = FoodResource::class;
 
-    protected ?string $subheading = 'Create new food items. AI Auto Fill requires Step 1, 2, and 4, which fills in macros for Step 3.';
+    protected ?string $subheading = 'Create new food items. AI Auto Fill requires Step 1, 2, and 3, which fills in macros for Step 4 & 5.';
 
     protected function mutateFormDataBeforeCreate(array $data): array {
 

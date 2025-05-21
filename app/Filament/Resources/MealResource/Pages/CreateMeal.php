@@ -20,7 +20,7 @@ class CreateMeal extends CreateRecord
 {
     protected static string $resource = MealResource::class;
 
-    protected ?string $subheading = 'Custom Page Subheading';
+    protected ?string $subheading = 'Create meals from existing food items. You can also save these meals as recipes for later!';
 
     protected function mutateFormDataBeforeCreate(array $data): array {
 

@@ -106,9 +106,11 @@ class EditMeal extends EditRecord
                        $mealSelected->update();
                        $mealSelected->touch();
 
+                    //    dd($record);
+                    //    dd($data);
 
-                       $mealItems_selected_delete = MealItems::where('meal_id', $data['food'][0]['meal_id'])
-                                                ->delete();
+                       $mealItems_selected_delete = MealItems::where('meal_id', $record['id'])
+                                                ?->delete();
 
                     //    $mealItems_selected->delete();
 
@@ -121,9 +123,9 @@ class EditMeal extends EditRecord
 
                     $user_id = Auth::user()->id;
                 
-                    $newMeal_search = Meal::where('user_id', $user_id)
-                                ->latest('id')
-                                ->first();
+                    // $newMeal_search = Meal::where('user_id', $user_id)
+                    //             ->where('meal_id', $record['id'])
+                    //             ->first();
 
 
                     foreach($data['food'] as $food) {
@@ -139,7 +141,7 @@ class EditMeal extends EditRecord
 
                         MealItems::create([
                             'name' => $food_name,
-                            'meal_id' => $newMeal_search->id,
+                            'meal_id' => $mealSelected->id,
                             'food_id' => $food['food_id'],
                             'food_unit_id' => $meal_macros['food_unit_id'],
                             'serving_size' => $food['serving_size'],

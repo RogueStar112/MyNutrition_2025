@@ -191,7 +191,7 @@ class StatsOverview extends BaseWidget
         return [
         Stat::make("Latest Calories - " . date('d M', strtotime($latest_macros_date)), "$latest_calories" . "kcal")
             ->description("$calorie_difference_perc%" . ($calorie_difference_perc > 0 ? " more " : " less ") . " compared to " . date('d M', strtotime($last2records[0]['date'])) . " (" . $last2records[0]['macros']['calories'] . "kcal)")
-            ->descriptionIcon('heroicon-m-arrow-trending-up')
+            ->descriptionIcon(($calorie_difference_perc > 0) ? 'heroicon-m-arrow-trending-up' : 'heroicon-m-arrow-trending-down' )
             // ->chart($trendData->pluck('calories')->map(fn($val) => round($val))->toArray())
             ->chart([$second_latest_calories, $latest_calories])
             ->color(($calorie_difference_perc > 0) ? 'danger' : 'success'),
