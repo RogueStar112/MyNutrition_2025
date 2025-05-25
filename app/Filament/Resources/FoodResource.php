@@ -275,32 +275,32 @@ class FoodResource extends Resource
 
     protected function afterSave(): void
     {
-    $macronutrients = $this->record->macronutrients;
+        $macronutrients = $this->record->macronutrients;
 
-    if ($macronutrients) {
-        $macronutrients->update([
-            'food_unit_id' => $this->form->getState()['food_unit'],
-            'serving_size' => $this->form->getState()['serving_size'],
-            'calories' => $this->form->getState()['calories'],
-            'fat' => $this->form->getState()['fat'],
-            'carbohydrates' => $this->form->getState()['carbohydrates'],
-            'protein' => $this->form->getState()['protein'],
-        ]);
-    } else {
-        // If Macronutrients doesn't exist, create one
-        Macronutrients::create([
-            'food_id' => $this->record->id,
-            'food_unit_id' => $this->form->getState()['food_unit'],
-            'serving_size' => $this->form->getState()['serving_size'],
-            'calories' => $this->form->getState()['calories'],
-            'fat' => $this->form->getState()['fat'],
-            'carbohydrates' => $this->form->getState()['carbohydrates'],
-            'protein' => $this->form->getState()['protein'],
-        ]);
-    }
+            if ($macronutrients) {
+                $macronutrients->update([
+                    'food_unit_id' => $this->form->getState()['food_unit'],
+                    'serving_size' => $this->form->getState()['serving_size'],
+                    'calories' => $this->form->getState()['calories'],
+                    'fat' => $this->form->getState()['fat'],
+                    'carbohydrates' => $this->form->getState()['carbohydrates'],
+                    'protein' => $this->form->getState()['protein'],
+                ]);
+            } else {
+                // If Macronutrients doesn't exist, create one
+                Macronutrients::create([
+                    'food_id' => $this->record->id,
+                    'food_unit_id' => $this->form->getState()['food_unit'],
+                    'serving_size' => $this->form->getState()['serving_size'],
+                    'calories' => $this->form->getState()['calories'],
+                    'fat' => $this->form->getState()['fat'],
+                    'carbohydrates' => $this->form->getState()['carbohydrates'],
+                    'protein' => $this->form->getState()['protein'],
+                ]);
+            }
 
     // --- 🎉 FANCY SUCCESS TOAST ---
-    $this->notify('success', 'Macronutrients saved successfully!');
+        $this->notify('success', 'Macronutrients saved successfully!');
     }
 
     public static function getRelations(): array

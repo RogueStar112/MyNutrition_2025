@@ -16,6 +16,9 @@ use App\Models\Meal;
 use App\Models\MealItems;
 use App\Models\FoodUnit;
 
+use Filament\Notifications\Actions\Action;
+use Filament\Notifications\Notification;
+
 class CreateMeal extends CreateRecord
 {
     protected static string $resource = MealResource::class;
@@ -43,7 +46,22 @@ class CreateMeal extends CreateRecord
         }
 
     protected function afterCreate(): void
-        {   
+        {      
+
+            $formData = $this->form->getState();
+            
+            Notification::make()
+                ->title('Saved successfully')
+                ->success()
+                ->body('Changes to the post have been saved.')
+                ->actions([
+                    Action::make('view')
+                        ->button()
+                        ->markAsRead(),
+                ])
+                ->send();
+
+
             foreach($this->form->getState()['food'] as $food) {
 
                 $user_id = Auth::user()->id;
@@ -73,6 +91,8 @@ class CreateMeal extends CreateRecord
                     'protein' =>  round(($meal_macros['serving_size'] / $food['serving_size']) * $meal_macros['protein'], 0),
                 ]);
             }
+
+            
         }
 
 }

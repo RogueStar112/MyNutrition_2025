@@ -21,6 +21,8 @@ class DailyCaloriesChart extends ChartWidget
 {
     protected static ?string $heading = 'Daily Macros (Last 30 Days)';
 
+    protected int | string | array $columnSpan = 'full';
+
     protected function getData(): array
     {
         $meals = Meal::with('mealItems')
@@ -132,6 +134,7 @@ class DailyCaloriesChart extends ChartWidget
                     'label' => 'Fat',
                     'data' => $trendData->pluck('fat')->map(fn($val) => round($val))->toArray(),
                     'borderColor' => '#fbbf24', // Yellow
+                    'hidden' => true,
                 ],
 
                 
@@ -139,12 +142,14 @@ class DailyCaloriesChart extends ChartWidget
                     'label' => 'Carbs',
                     'data' => $trendData->pluck('carbs')->map(fn($val) => round($val))->toArray(),
                     'borderColor' => '#60a5fa', // Blue
+                    'hidden' => true,
                 ],
                 
                 [
                     'label' => 'Protein',
                     'data' => $trendData->pluck('protein')->map(fn($val) => round($val))->toArray(),
                     'borderColor' => '#34d399', // Green
+                    'hidden' => true,
                 ],
             ],
             'labels' => $labels,
