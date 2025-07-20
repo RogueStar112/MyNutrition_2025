@@ -18,11 +18,11 @@ use App\Models\Meal;
 use App\Models\MealItems;
 use App\Models\FoodUnit;
 
-class DailyCaloriesChart extends ChartWidget
+class DailyMacroStats_Pie extends ChartWidget
 {
     // protected ?string $heading = 'Macros';
 
-    protected int | string | array $columnSpan = 'full';
+    protected int | string | array $columnSpan = '1';
 
     protected static ?string $maxHeight = '400px';
     
@@ -50,6 +50,8 @@ class DailyCaloriesChart extends ChartWidget
     protected function getData(): array
     {   
         $activeFilter = $this->filter;
+
+        $this->getType();
 
         $meals = Meal::with('mealItems')
             ->whereBetween('time_planned', [now()->subDays(30), now()])
@@ -326,27 +328,9 @@ class DailyCaloriesChart extends ChartWidget
     protected function getType(): string
     {
         
-        // return 'doughnut';
-
-        return 'bar';
-        // $activeFilter = $this->filter;
-
-        // if ($activeFilter == 'today') {
-        //     return 'doughnut';
-        // } elseif ($activeFilter != 'today') {
-        //     return 'bar';
-        // }
+        return 'doughnut';
  
     }
 
-    // protected function getOptions(): array
-    // {
-    //     return [
-    //         'plugins' => [
-    //             'legend' => [
-    //                 'display' => false,
-    //             ],
-    //         ],
-    //     ];
-    // }
+
 }

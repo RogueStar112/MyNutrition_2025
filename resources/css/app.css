@@ -1,14 +1,486 @@
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source "./resources/**/*.blade.php";
+@source './resources/views/filament/**/*.blade.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 @tailwind variants;
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../**/*.blade.php';
-@source '../**/*.js';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-main: 'Figtree', 'Montserrat', ui-sans-serif;
+}
+
+
+.figtree-300 {
+  font-family: "Figtree", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
+.montserrat-800
+{
+  font-family: "Montserrat", sans-serif;
+    font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
+.sb-selected {
+    --tw-ring-opacity: 1;
+    --tw-ring-color: rgb(196 181 253 / var(--tw-ring-opacity));
+    --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+    --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(3px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+    box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+        outline: 2px solid transparent;
+        outline-offset: 2px;
+}
+
+[id^="nutritional_wrapper_"] {
+    /* display: none; */
+    opacity: 0;
+    height: 0px;
+    overflow: hidden;
+    transition: height 0.6s, opacity 0.6s, transform 0.6s;
+}
+
+[class^="nutritional_wrapper_"] {
+    /* display: none; */
+    opacity: 0;
+    height: 0px;
+    overflow: hidden;
+    transition: height 0.6s, opacity 0.6s, transform 0.6s;
+}
+
+
+.slide-down {
+    display: block;
+    opacity: 1;
+    height: 260px;
+    transform: translateY(0%);
+}
+
+/* credit to: https://jonathanbriehl.com/posts/build-a-simple-calendar-with-carbon-and-laravel#disqus_thread */
+
+
+.calendar {
+    display: flex;
+    position: relative;
+    padding: 16px;
+    margin: 0 auto;
+    flex-direction: row-reverse;
+    max-height: 512px;
+    height: 512px;
+    max-width: 50%;
+    background: #1F2937;
+    border-radius: 4px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.calendar.hidden {
+
+    display: none;
+
+}
+
+.month-year {
+    position: absolute;
+    bottom:62px;
+    right: -27px;
+    font-size: 2rem;
+    line-height: 1;
+    font-weight: 300;
+    color: white;
+    transform: rotate(90deg);
+    -webkit-transform: rotate(90deg);
+    -moz-transform: rotate(90deg);
+    -ms-transform: rotate(90deg);
+}
+
+.year {
+    margin-left: 4px;
+    color: #9A3412;
+}
+
+.datepicker-controls > button {
+    @apply cursor-pointer;
+    @apply dark:hover:text-black;
+}
+
+.datepicker-controls > button > svg {
+    @apply cursor-pointer;
+    @apply dark:hover:text-black;
+}
+
+/* .datepicker-cell {
+    @apply p-2;
+    @apply text-black!;
+    @apply hover:text-white!;
+    @apply dark:text-white;
+} */
+
+/* .days {
+    display: flex;
+    flex-wrap: wrap;
+    flex-grow: 1;
+    margin-right: 46px;
+} */
+
+.day-label {
+    position: relative;
+    flex-basis: calc(14.286% - 2px);
+    margin: 1px 1px 12px 1px;
+    font-weight: 700;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    color: white;
+    text-align: center;
+}
+
+.day {
+    position: relative;
+    flex-basis: calc(14.286% - 2px);
+    margin: 1px;
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 300;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.day > * {
+
+    font-size: 0.8rem;
+}
+
+
+.day.dull {
+    color: #94A3B8;
+}
+
+.day.today {
+    color: rgb(232, 163, 13);
+    font-weight: 600;
+}
+
+.day::before {
+    /* content: ''; */
+    display: block;
+    padding-top: 100%;
+}
+
+.day:hover {
+    background: #111827;
+}
+
+.day .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.active-mode {
+
+    border: 4px solid lime;
+}
+
+input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
+    appearance: textfield;
+    margin: 0; 
+  }
+
+
+.no-select-arrow {
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        text-indent: 1px;
+        text-overflow: '';
+}
+
+.primary-water-form {
+
+    /* default: bg-teal-500 */
+    background-color: #14b8a6;
+
+}
+
+.secondary-water-form {
+
+    /* default: bg-teal-600 */
+    background-color: #0d9488;
+
+}
+
+.tertiary-water-form {
+
+     /* default: bg-teal-700 */
+    background-color: #0f766e;
+}
+
+  /* input[type=radio] {
+    display:none;
+ } */
+ 
+ /* input[type=radio] + label {
+    display: inline-block;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-right: 10px;
+    color: #eee;
+    cursor: pointer;
+    list-style: none;
+ } */
+
+label > input[type=radio] {
+    display: inline-block;
+    border: 1px solid #eee;
+    padding: 10px;
+    margin-right: 10px;
+    color: #eee;
+    cursor: pointer;
+    transition-duration: 0.3s;
+ }
+
+ input[type=radio]:checked + label {
+    background: #eee;
+    color: #000;
+ }
+
+ label > input[type=radio]:checked {
+    background: #eee;
+    color: #000;
+    transition-duration: 0.3s;
+ }
+
+/* #TASKS .next-day-active {
+ right: 
+} */
+
+/* #TASKS {
+    transition-duration: 0.5s;
+} */
+
+label {
+    transition-duration: 0.3s;
+}
+
+.days-of-week {
+ grid-auto-flow: column;
+}
+
+.nutrition-gap > div {
+    flex: 0 0 25%;
+}
+
+.fooditem-fade {
+    background: rgb(31,41,55);
+    background: linear-gradient(90deg, rgba(31,41,55,1) 0%, rgba(255,255,255,0) 100%); 
+    background-position: center;
+    background-size: cover;
+    /* background: linear-gradient(to left, #fbf7f6 1%, rgba(251, 247, 246, 0.8) 100px, #fbf7f6 256px) */
+}
+
+#TN-TOP-SECTION {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+#TN-TOP-SECTION .top-img {
+    -webkit-mask-image: -webkit-radial-gradient(left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    mask-image: -webkit-radial-gradient(left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    background-size: contain;
+}
+
+#TN-TOP-SECTION .bottom-img {
+    -webkit-mask-image: -webkit-radial-gradient(right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    mask-image: -webkit-radial-gradient(right, rgba(0, 0, 0, 0), rgba(0, 0, 0, 1));
+    background-size: contain;
+}
+
+#drink-type:focus {
+    outline: 0;
+}
+
+.primary-sleep-form {
+    background-color: #B692C2;
+}
+
+.secondary-sleep-form {
+    background-color: #694F8E;
+}
+
+.tertiary-sleep-form {
+    background-color: #9071A8;
+}
+
+@media only screen and (min-width: 350px) {
+
+    #MOBILE-WIDGETS {
+        position: fixed;
+        left: 0;
+    }
+
+}
+
+/* #slideshow div:not(.selected) {
+    display: none;
+} */
+
+ /* Hide scrollbar for Chrome, Safari and Opera */
+#slideshow-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Hide scrollbar for IE, Edge and Firefox */
+  #slideshow-container {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  } 
+
+/* .bg-radial-orange {
+background-image: radial-gradient(446.50% 301.92% at 50.09% 3.49%, #241e05 13.21%, #a2a074 27.92%, #d3a933 34.17%);
+} */
+
+#carousel-wrapper {
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slides {
+    transition: transform 0.5s ease-in-out;
+}
+
+/* @keyframes morph {
+    0% {
+        border-radius: 83% 17% 90% 10% / 23% 84% 16% 77%;
+    }
+    50% {
+        border-radius: 30% 70% 20% 80% / 60% 30% 70% 40%;
+    }
+    100% {
+        border-radius: 83% 17% 90% 10% / 23% 84% 16% 77%;
+    }
+}
+
+.animate-border {
+    animation: morph 5s infinite alternate ease-in-out;
+    animation-delay: 3s;
+} */
+
+/* @keyframes morph {
+    0%, 22% { 
+        border-radius: 83% 17% 90% 10% / 23% 84% 16% 77%; 
+    }
+    25%, 47% { 
+        border-radius: 30% 70% 20% 80% / 60% 30% 70% 40%; 
+    }
+    50%, 72% { 
+        border-radius: 50% 50% 70% 30% / 40% 60% 50% 50%; 
+    }
+    75%, 100% { 
+        border-radius: 20% 80% 30% 70% / 50% 20% 80% 30%; 
+    }
+} */
+
+@keyframes morph {
+    0%, 20% { 
+        border-radius: 83% 17% 90% 10% / 23% 84% 16% 77%; 
+    }
+    25%, 45% { 
+        border-radius: 30% 70% 20% 80% / 60% 30% 70% 40%; 
+    }
+    50%, 70% { 
+        border-radius: 50% 50% 70% 30% / 40% 60% 50% 50%; 
+    }
+    75%, 95% { 
+        border-radius: 20% 80% 30% 70% / 50% 20% 80% 30%; 
+    }
+    100% { 
+        border-radius: 83% 17% 90% 10% / 23% 84% 16% 77%; /* Back to original */
+    }
+}
+
+/* @keyframes opacity {
+    0%, 22% { 
+        opacity: 1; 
+    }
+    25%, 47% { 
+        opacity: 0; 
+    }
+    50%, 72% { 
+        border-radius: 50% 50% 70% 30% / 40% 60% 50% 50%; 
+    }
+    75%, 100% { 
+        border-radius: 20% 80% 30% 70% / 50% 20% 80% 30%; 
+    }
+} */
+
+@keyframes fade {
+    0% { opacity: 0; }
+    8.33% { opacity: 1; }   /* Fade in */
+    25% { opacity: 1; }     /* Stay fully visible */
+    33.33% { opacity: 0; }  /* Fade out */
+    100% { opacity: 0; }    /* Stay hidden */
+}
+
+/* Apply different delays so images appear sequentially */
+.img-1 { animation-delay: 0s !important; }
+.img-2 { animation-delay: 3s !important; }
+.img-3 { animation-delay: 6s !important; }
+.img-4 { animation-delay: 9s !important; }
+
+.animate-border {
+    animation: morph 18s infinite ease-in-out;
+}
+
+#hero-images img {
+    
+        animation: fade 12s infinite both;
+}
+
+input {
+    @apply p-4;
+}
+
+select {
+    @apply p-4;
+}
+
+.dark .datepicker-cell {
+    color: white !important;
+  }
+  
+.light .datepicker-cell {
+    color: black !important;
+}
+
+.light .datepicker-cell:hover {
+    color: white !important;
+}
+
+.faded-x-mask {
+  position: relative;
+  overflow: hidden;
+  mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 10%, black 90%, transparent);
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+  mask-repeat: no-repeat;
+  -webkit-mask-repeat: no-repeat;
 }

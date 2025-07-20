@@ -18,17 +18,23 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
+use App\Filament\Resources\MealResource\Widgets\DailyCaloriesChart;
+use App\Filament\Resources\MealResource\Widgets\DailyMacroStats_Pie;
+use App\Filament\Resources\MealResource\Widgets\DailyMacroStats_Text;
+
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
             ->default()
+            ->brandLogo(asset('img/mynutritionlogo_scales_upscaled.png'))
             ->id('admin')
             ->path('admin')
             ->login()
             ->colors([
                 'primary' => Color::Amber,
+                'secondary' => Color::Blue,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
@@ -37,8 +43,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
+                
+                // Widgets\AccountWidget::class,
+                // Widgets\FilamentInfoWidget::class,
+                DailyMacroStats_Pie::class,
+                DailyMacroStats_Text::class
             ])
             ->middleware([
                 EncryptCookies::class,

@@ -20,6 +20,13 @@ use App\Models\Macronutrients;
 use App\Models\Micronutrients;
 
 use Filament\Tables\Actions\Action;
+use Filament\Forms\Components\Actions;
+use Filament\Forms\Components\Actions\Action as ComponentAction;
+
+use Filament\Forms\Get;
+use Filament\Forms\Set;
+
+use App\Services\AI;
 
 use Illuminate\Http\Request;
 use OpenAI\Laravel\Facades\OpenAI;
@@ -29,6 +36,13 @@ use Filament\Forms\Components\Fieldset;
 use Filament\Forms\Components\Placeholder;
 
 use Illuminate\Support\HtmlString;
+
+use Filament\Notifications\Notification;
+
+use Filament\Forms\Components\FileUpload;
+
+use Illuminate\Support\Facades\Storage;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class FoodResource extends Resource
 {
@@ -44,6 +58,56 @@ class FoodResource extends Resource
     {
         return $form
             ->schema([
+
+                
+                FileUpload::make('attachment')
+                ->label('✨ Create Food from Image')
+                ->columnSpan([
+                    'sm' => 'full'
+                ])
+                
+                ->image()
+                ->imageEditor()
+                ->acceptedFileTypes(['image/png', 'image/jpg', 'image/jpeg'])
+                ->minSize(1)
+                ->maxSize(15360)
+                ->maxFiles(1)
+                ->storeFiles(false),
+
+                
+                Actions::make([
+                    ComponentAction::make('aiImageAutoFill')
+                     ->label('✨ Image Auto Fill')
+              
+                     ->color('secondary')
+
+                    ->action(function (Get $get, Set $set) {
+                        $formData = $get();
+
+                        $formData_keys = array_keys($formData['attachment']);
+
+                        $attachment = $formData['attachment'];
+
+                        for($i=0; $i<count($formData_keys); $i++) {
+
+                            $file = $attachment[$formData_keys[$i]];
+             
+                        }
+
+                        
+                        $storedPath = $file->store('food', 'public'); 
+
+                        $url = Storage::disk('public')->url($storedPath);
+
+                        dd($url);
+
+
+                        // $formData = AI::ImageGenerate($url);
+
+                        // dd($formData);
+                    })
+                ]),
+
 
                 Fieldset::make('Step 1. Name and Source')
                 ->schema([
@@ -62,6 +126,7 @@ class FoodResource extends Resource
                     ->required()
                     ->maxLength(64),
                 ]),
+                
         
                 Fieldset::make('Step 2. Serving size and units')
                     ->schema([
@@ -117,6 +182,73 @@ class FoodResource extends Resource
                     Forms\Components\TextInput::make('description')
                     ->maxLength(256),
                 ]),
+
+               Actions::make([
+                     ComponentAction::make('aiAutoFill')
+                     ->label('✨ AI Auto Fill')
+                     ->color('success')
+                     
+                    ->action(function (Get $get, Set $set) {
+                            // Access unsubmitted form data
+                            $formData = $get();
+
+                            $name = $formData['name'] ?? null;
+                            $source = $formData['food_source'] ?? null;
+                            $foodUnit = $formData['food_unit'] ?? null;
+                            $servingSize = $formData['serving_size'] ?? null;
+                            
+                            $foodPrompt = AI::Generate($get('name'), $get('serving_size'), $get('food_unit'), $get('food_source'));
+                    
+
+                            $foodPrompt_JSON = $foodPrompt->getContent();
+
+
+
+                            $foodPrompt_array = json_decode($foodPrompt_JSON, true);
+                        
+                            $foodPrompt_result = json_decode($foodPrompt_array['result'], true);
+
+                            // ✨ Use AI logic or API call here (stubbed for now)
+
+                            $calculatedCalories = $foodPrompt_result['Calories'] ?? $foodPrompt_result['Calories (kcal)'] ?? NULL;
+                            $calculatedFats = $foodPrompt_result['Fat']  ?? $foodPrompt_result['Fat (g)'] ?? NULL;
+                            $calculatedCarbs = $foodPrompt_result['Carbs'] ?? $foodPrompt_result['Carbs (g)'] ?? NULL;
+                            $calculatedProtein = $foodPrompt_result['Protein'] ?? $foodPrompt_result['Protein (g)'] ?? NULL;
+
+                            $calculatedSugars = $foodPrompt_result['Sugars'] ?? $foodPrompt_result['Sugars (g)'] ?? NULL;
+                            $calculatedSaturates = $foodPrompt_result['Saturates'] ?? $foodPrompt_result['Saturates (g)'] ?? NULL;
+                            $calculatedFibre = $foodPrompt_result['Fibre'] ?? $foodPrompt_result['Fibre (g)'] ?? NULL;
+                            $calculatedSalt = $foodPrompt_result['Salt'] ?? $foodPrompt_result['Salt (g)'] ?? NULL;
+                            
+                            $sourceData = $foodPrompt_result['DataSource'];
+
+                            // Set form state (e.g., to auto-fill a calories field)
+                            
+                            // $form_labels = ['name', 'food_source', 'serving_size', 'food_unit', 'calories', 'fat', 'carbohydrates', 'protein', 'sugars', 'saturates', 'fibre']
+
+                            $set('name', $formData['name']);
+                            $set('food_source', $formData['food_source']);
+                            $set('serving_size', $formData['serving_size']);
+                            $set('food_unit', $formData['food_unit']);
+                            $set('calories', $calculatedCalories);
+                            $set('fat', $calculatedFats);
+                            $set('carbohydrates', $calculatedCarbs);
+                            $set('protein', $calculatedProtein);
+                            $set('sugars', $calculatedSugars);
+                            $set('saturates', $calculatedSaturates);
+                            $set('fibre', $calculatedFibre);
+                            $set('salt', $calculatedSalt);
+                            $set('user_id', $formData['user_id']);
+                            $set('description', "🔎 AI. Source: $sourceData");
+
+                            Notification::make()
+                                ->title('Macros estimated and filled in!')
+                                ->success()
+                                ->send();
+                        }),
+                    ]),
+
+               
 
               Fieldset::make('Step 4. Nutrition: Macronutrients')
                     // ->description('These do NOT have to be filled in for AI Auto Fill.')
@@ -184,7 +316,7 @@ class FoodResource extends Resource
                             ->required(false),
                     ]),
         
-            ]);
+                ]);
     }
 
     public static function create(): CreateRecord

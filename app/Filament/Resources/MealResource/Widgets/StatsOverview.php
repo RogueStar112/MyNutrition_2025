@@ -36,11 +36,17 @@ class StatsOverview extends BaseWidget
     {
         $meals = Meal::with('mealItems')
             ->whereBetween('time_planned', [now()->subDays(30), now()])
-            ->get();
+            ->get()
+            ->sortBy('time_planned');
 
 
-
-        foreach($meals as $key => $value) {
+        if(count($meals) <= 0) {
+                 return [
+                     Stat::make("No recent records found", "Create new meals here!")
+                 ];
+            
+        } else {
+            foreach($meals as $key => $value) {
             
             // dd($value);
             
@@ -116,6 +122,8 @@ class StatsOverview extends BaseWidget
             });
         // Format for Filament chart
 
+        // dd($trendData);
+
         $labels = $trendData->keys()->toArray();
         
 
@@ -131,6 +139,7 @@ class StatsOverview extends BaseWidget
 
         // dd($avg_calories_mspd);
 
+         
         $avg_calories_mspd = round(array_sum($avg_calories_mspd) / count($avg_calories_mspd), 0);
 
         // dd($avg_calories_mspd);
@@ -147,17 +156,40 @@ class StatsOverview extends BaseWidget
         // dd($popular_meal_items);
 
         $last7days = date('d/m/Y', strtotime(now()->subdays(6)));
+        // $last30days = date('d/m/Y', strtotime(now()->subdays(29)));
         $today = date('d/m/Y', strtotime(now()));
 
         // $popular_meal_items_display = implode(", <br>", $popular_meal_items->pluck('name')->map(fn($val) => $val)->toArray());
         
+
         $popular_meal_items_array_name = [];
         $popular_meal_items_array_points = [];
+        
+        // dd('test1', $popular_meal_items);
+
+        if ($popular_meal_items === [] || count($popular_meal_items)) {
+            
+            $popular_meal_items = [
+                ["name" => "Gold", "total" => 3],
+                ["name" => "Silver", "total" => 2],
+                ["name" => "Bronze", "total" => 1],
+            ];
+
+        }
+        
+        // dd($popular_meal_items);
 
         foreach($popular_meal_items as $popular_meal_item) {
-            array_push($popular_meal_items_array_name, $popular_meal_item->name);
-            array_push($popular_meal_items_array_points, $popular_meal_item->total);
+     
+            array_push($popular_meal_items_array_name, $popular_meal_item->name ?? $popular_meal_item['name']);
+            array_push($popular_meal_items_array_points, $popular_meal_item->total ?? $popular_meal_item['name']);
         }
+
+        if(count($popular_meal_items_array_name) < 3 || count($popular_meal_items_array_points) < 3) {
+            $popular_meal_items_array_name = ["Gold", "Silver", "Bronze"];
+            $popular_meal_items_array_points = [3, 2, 1];
+        }
+  
 
         // dd($popular_meal_items_array);
 
@@ -175,13 +207,13 @@ class StatsOverview extends BaseWidget
         
         // $second_latest_calories = $last2records[0]['macros']['calories'];
 
-        $latest_macros = $last2records[1]['macros'];
+        $latest_macros = $last2records[1]['macros'] ?? [];
 
 
 
-        $latest_macros_date = $last2records[1]['date'];
-        $latest_calories = $last2records[1]['macros']['calories'];
-        $second_latest_calories = $last2records[0]['macros']['calories'];
+        $latest_macros_date = $last2records[1]['date'] ?? '2025-07-15';
+        $latest_calories = $last2records[1]['macros']['calories'] ?? 1;
+        $second_latest_calories = $last2records[0]['macros']['calories'] ?? 1;
 
         // dd($latest_calories, $second_latest_calories);
         $calorie_difference_perc = round((($latest_calories - $second_latest_calories) / (($latest_calories + $second_latest_calories) / 2)) * 100, 1);
@@ -221,4 +253,8 @@ background: linear-gradient(90deg,rgba(71, 69, 14, 1) 5%, rgba(24, 24, 27, 1) 10
             ->color('info'),
         ];
     }
+        }   
+
+        
+    
 }
