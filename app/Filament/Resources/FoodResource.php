@@ -44,6 +44,8 @@ use Filament\Forms\Components\FileUpload;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
+use LevelUp\Experience\Contracts\Multiplier;
+
 class FoodResource extends Resource
 {
     protected static ?string $model = Food::class;
